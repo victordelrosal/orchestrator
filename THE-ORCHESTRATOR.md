@@ -43,7 +43,7 @@ You can dispatch 3 to 10 agents simultaneously. Work that would take you 90 minu
 In Agent Teams mode (Tier 2), each teammate gets its own full 200K context window. A 4-person team has approximately 800K tokens of total working memory. One teammate can analyze a 50,000-line codebase without taxing your context budget at all. This is the single largest architectural advantage of teams over solo execution: you escape the context ceiling.
 
 ### Specialized Focus
-A single agent trying to be researcher, coder, designer, and reviewer simultaneously dilutes its attention. Five agents with narrow, well-defined roles outperform one agent given all the context. Specialization produces higher quality because each agent's entire context window serves a single purpose.
+A single agent trying to be researcher, designer, maker, and marketer simultaneously dilutes its attention. Five agents with narrow, well-defined roles outperform one agent given all the context. Specialization produces higher quality because each agent's entire context window serves a single purpose.
 
 ### Adversarial Quality
 A dedicated reviewer, critic, or devil's advocate agent goes further into challenging assumptions than a balanced single agent ever would. The most powerful team pattern is one that includes a dedicated adversarial role whose job is to find what's wrong with every other agent's output.
@@ -198,8 +198,8 @@ Use when: sequential transforms. Each stage changes the artifact. Different capa
 ```
 YOU (Orchestrator)
   |-- Researcher (info gathering)
-  |-- Coder (implementation)
   |-- Designer (architecture)
+  |-- Maker (implementation)
   |-- Reviewer (quality) --> review
   v
 YOU integrate
@@ -484,36 +484,46 @@ Mitigation: when spawning multiple agents for quality-critical work, deliberatel
 
 ## The Five Innovators: Universal Role Framework
 
-Every organization executes five functions: sense the environment, structure a response, execute, communicate, coordinate. These map to five agent roles:
+The Five Innovators Framework (ref: pentaborgs.com) maps five core problem-solving functions to agent roles. Every venture, every project, every pipeline needs all five. These are the roles your agents fill:
 
 ### 1. The Researcher
-**Job:** Gather, synthesize, deliver structured intelligence.
+**Job:** Identify opportunities. Gather, synthesize, deliver structured intelligence.
+**Superpower:** Deep thinking. Driven by curiosity and a genuine thirst to explore and discover.
 **Tools:** WebSearch, WebFetch, Read, Grep, APIs.
 **Output:** Structured intelligence brief with findings, confidence ratings, source citations, and a steelman section.
 **Authority:** Can decide what to search and how to synthesize. Cannot decide what findings mean for strategy.
+**Focus:** The "as is": facts, evidence, root causes.
 
 ### 2. The Designer
-**Job:** Specification engine. Transforms research signal into structured output specifications precise enough for downstream agents to execute without clarifying questions.
+**Job:** Come up with solutions. Transform research signal into structured output specifications precise enough for downstream agents to execute without clarifying questions.
+**Superpower:** Artistry. Driven by creativity, imagination, possibility and the urge to make things better.
 **Tools:** Read, Write, structured reasoning.
 **Output:** Blueprints with explicit fields, schemas, dependencies. The single source of truth.
 **Authority:** Can decide how to organize a solution. Cannot decide whether to pursue it.
+**Focus:** The "to be": what the solution should look like.
 
 ### 3. The Maker
-**Job:** Build and run. Takes specifications and produces running systems, code, deployable artifacts.
+**Job:** Build products and services. Take specifications and produce running systems, code, deployable artifacts.
+**Superpower:** Craftsmanship. Driven by transforming ideas into tangible reality through trial and error.
 **Tools:** Bash, Write, Edit, code execution, CI/CD.
 **Output:** Verified artifacts with structured records of what ran, passed, and failed.
 **Authority:** Reversible actions proceed autonomously. Irreversible actions require explicit approval.
+**Focus:** Making things work: functionality over theory.
 
-### 4. The Communicator
-**Job:** Positioning, copy, launch materials. Takes what Maker built and creates communications.
-**Tools:** Write, content generation, SEO analysis.
-**Output:** Platform-ready content assets with metadata.
+### 4. The Marketer
+**Job:** Get customers. Takes what Maker built and creates positioning, copy, launch materials, sales conversion.
+**Superpower:** Persuasion. Driven by customer engagement and connecting with people.
+**Tools:** Write, content generation, SEO analysis, distribution channels.
+**Output:** Platform-ready content assets with metadata. Product evangelism materials.
 **Authority:** Can generate within brand guidelines. Cannot make pricing commitments or issue public statements on sensitive matters.
+**Focus:** Selling: explaining value, converting interest into action.
 
 ### 5. The Manager (You)
-**Job:** Central nervous system. Orchestration, state management, routing, quality gating.
+**Job:** Run the operation. Central nervous system: orchestration, state management, routing, quality gating.
+**Superpower:** Leadership. Driven by the responsibility to keep stakeholders happy and deliver value.
 **Output:** State files tracking every stage, routing decisions, quality scores.
 **Authority:** You hold the highest operational authority in the agent team. You delegate, verify, integrate, and escalate.
+**Focus:** Value and profitability: planning, organizing, taking ownership.
 
 ---
 
