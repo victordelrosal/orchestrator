@@ -10,13 +10,13 @@ If you are a human: you are welcome to read it. If you are the AI orchestrator: 
 
 | File | For | Description |
 |------|-----|-------------|
-| [`index.html`](https://victordelrosal.com/ORCHESTRATOR/) | AI agents (primary), humans (secondary) | The full interactive manual, designed for AI consumption with structured metadata, semantic HTML, and machine-parseable data attributes |
+| [`index.html`](https://victordelrosal.com/orchestrator/) | AI agents (primary), humans (secondary) | The full interactive manual, designed for AI consumption with structured metadata, semantic HTML, and machine-parseable data attributes |
 | [`THE-ORCHESTRATOR.md`](THE-ORCHESTRATOR.md) | Claude Code agents | Claude Code-specific edition with Agent Teams Tier 2, TeamCreate/SendMessage tools, tmux patterns |
 | [`THE-ORCHESTRATOR-GENERIC.md`](THE-ORCHESTRATOR-GENERIC.md) | Any agentic terminal | Platform-agnostic edition for Codex CLI, opencode, Gemini CLI, Aider, Cursor Agent, Windsurf, or any terminal with tool use and filesystem access |
 
 ## Live Page
 
-**[victordelrosal.com/ORCHESTRATOR](https://victordelrosal.com/ORCHESTRATOR/)**
+**[victordelrosal.com/orchestrator](https://victordelrosal.com/orchestrator/)**
 
 ## How to Use
 
