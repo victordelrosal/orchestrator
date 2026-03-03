@@ -583,22 +583,128 @@
   }
   footer a:hover { color: var(--text-primary); }
 
-  /* ── RESPONSIVE ── */
+  /* ── RESPONSIVE: TABLET ── */
   @media (max-width: 768px) {
-    .hero-ascii { font-size: 14px; }
-    .hero-sub { font-size: 17px; }
+    .hero-crossfade { height: 250px; }
+    .hero-ascii { font-size: 13px; letter-spacing: 1px; }
+    .hero-tagline { font-size: 13px; letter-spacing: 3px; }
+    .hero-sub { font-size: 16px; padding: 0 16px; }
+    .hero { padding: 60px 0 48px; }
     .agents-grid { grid-template-columns: 1fr; }
-    .how-grid { grid-template-columns: 1fr; }
+    .how-grid { grid-template-columns: 1fr 1fr; }
     .principles-list { grid-template-columns: 1fr; }
     .section { padding: 40px 0; }
+    .section-title { font-size: 20px; }
     .nav-links a:not(.nav-gh) { display: none; }
+    .container { padding: 0 16px; }
+    .cta h2 { font-size: 26px; }
+    .cta { padding: 60px 0; }
   }
 
+  /* ── RESPONSIVE: MOBILE ── */
   @media (max-width: 480px) {
-    .hero { padding: 48px 0 40px; }
-    .hero-ascii { font-size: 10px; }
-    .qs-tabs { gap: 0; }
+    /* Nav */
+    nav { padding: 0 12px; }
+    .nav-inner { height: 48px; }
+    .nav-brand { font-size: 13px; letter-spacing: 1.5px; }
+    .nav-gh { padding: 5px 10px; font-size: 12px; }
+    .nav-gh svg { width: 14px; height: 14px; }
+
+    /* Hero */
+    .hero { padding: 40px 0 32px; }
+    .hero-crossfade { height: 160px; }
+    .hero-ascii { font-size: 8px; letter-spacing: 0.5px; line-height: 1.3; }
+    .hero-tagline { font-size: 11px; letter-spacing: 2px; margin-bottom: 16px; }
+    .hero-sub { font-size: 15px; line-height: 1.6; padding: 0 20px; }
+
+    /* Container */
+    .container { padding: 0 12px; }
+    .section { padding: 32px 0; }
+    .section-title { font-size: 18px; }
+
+    /* Quick Start tabs */
+    .qs-tabs {
+      gap: 0;
+      -webkit-overflow-scrolling: touch;
+    }
     .qs-tab { padding: 10px 12px; font-size: 11px; }
+    .qs-badge { font-size: 8px; padding: 1px 5px; margin-right: 4px; }
+    .qs-panel { padding: 16px; }
+    .qs-comment { font-size: 11px; }
+
+    /* Command blocks: stack vertically, scrollable code */
+    .qs-cmd {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+      padding: 12px 14px;
+    }
+    .qs-prompt { display: none; }
+    .qs-code {
+      font-size: 11px;
+      padding-right: 0;
+      width: 100%;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+    .qs-copy {
+      position: static;
+      transform: none;
+      margin-top: 8px;
+      align-self: flex-end;
+    }
+    .qs-note { font-size: 12px; }
+
+    /* Agent cards */
+    .agents-grid { grid-template-columns: 1fr; gap: 12px; }
+    .agent-card { padding: 20px 18px; }
+    .agent-icon { font-size: 24px; margin-bottom: 12px; }
+    .agent-name { font-size: 16px; }
+    .agent-desc { font-size: 13px; }
+
+    /* Commands table */
+    .cmd-table { font-size: 13px; }
+    .cmd-table th { padding: 10px 12px; font-size: 10px; }
+    .cmd-table td { padding: 10px 12px; font-size: 13px; }
+    .cmd-table code { font-size: 11px; padding: 1px 5px; }
+
+    /* How it works */
+    .how-grid { grid-template-columns: 1fr; gap: 12px; }
+    .how-card { padding: 18px; }
+    .how-diagram { font-size: 10px; padding: 12px; }
+    .how-name { font-size: 15px; }
+    .how-desc { font-size: 12px; }
+
+    /* Works with */
+    .compat-grid { gap: 8px; }
+    .compat-badge { padding: 8px 14px; font-size: 12px; }
+
+    /* Principles */
+    .principles-list { grid-template-columns: 1fr; gap: 10px; }
+    .principle-item { padding: 14px 16px; font-size: 13px; }
+
+    /* CTA */
+    .cta { padding: 48px 0; }
+    .cta h2 { font-size: 22px; }
+    .cta p { font-size: 14px; }
+    .cta-buttons { flex-direction: column; align-items: center; }
+    .btn { width: 100%; max-width: 280px; justify-content: center; padding: 14px 24px; }
+
+    /* Footer */
+    footer { padding: 32px 16px; }
+    footer p { font-size: 12px; }
+  }
+
+  /* ── RESPONSIVE: SMALL MOBILE (SE, etc.) ── */
+  @media (max-width: 360px) {
+    .hero-crossfade { height: 120px; }
+    .hero-ascii { font-size: 6.5px; }
+    .hero-tagline { font-size: 10px; }
+    .hero-sub { font-size: 14px; }
+    .section-title { font-size: 16px; }
+    .qs-code { font-size: 10px; }
+    .cmd-table code { font-size: 10px; }
   }
 </style>
 </head>
