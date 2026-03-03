@@ -151,7 +151,7 @@
   }
   .hero-banner {
     width: 100%;
-    height: 280px;
+    height: 350px;
     background: var(--bg-deep);
     display: flex;
     align-items: center;
@@ -165,23 +165,20 @@
     display: block;
     object-fit: contain;
   }
-  .hero h1 {
-    font-family: 'Inter', sans-serif;
-    font-size: 72px;
-    font-weight: 700;
-    letter-spacing: -1px;
-    background: linear-gradient(135deg, var(--purple-light), var(--yellow), var(--red-orange), var(--blue), var(--green), var(--purple-light));
-    background-size: 300% 300%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: gradient-shift 8s ease infinite;
-    margin-bottom: 16px;
+  .hero-ascii {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    line-height: 1.15;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-bottom: 20px;
+    white-space: pre;
   }
-  @keyframes gradient-shift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-  }
+  .hero-ascii .l1 { color: var(--yellow); }
+  .hero-ascii .l2 { color: var(--red-orange); }
+  .hero-ascii .l3 { color: var(--blue); }
+  .hero-ascii .l4 { color: var(--green); }
+  .hero-ascii .l5 { color: var(--purple-light); }
   .hero-tagline {
     font-family: 'JetBrains Mono', monospace;
     font-size: 16px;
@@ -570,7 +567,7 @@
 
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
-    .hero h1 { font-size: 48px; }
+    .hero-ascii { font-size: 14px; }
     .hero-sub { font-size: 17px; }
     .agents-grid { grid-template-columns: 1fr; }
     .how-grid { grid-template-columns: 1fr; }
@@ -581,7 +578,7 @@
 
   @media (max-width: 480px) {
     .hero { padding: 48px 0 40px; }
-    .hero h1 { font-size: 36px; }
+    .hero-ascii { font-size: 10px; }
     .qs-tabs { gap: 0; }
     .qs-tab { padding: 10px 12px; font-size: 11px; }
   }
@@ -610,7 +607,11 @@
     <div class="hero-banner">
       <img src="img/octopus.png" alt="Octopus: Multi-Agent Orchestration OS">
     </div>
-    <h1>Octopus</h1>
+    <div class="hero-ascii" aria-label="OCTOPUS"><span class="l1"> ████   ████  ██████  ████  █████  ██  ██ ██████</span>
+<span class="l2">██  ██ ██       ██   ██  ██ ██  ██ ██  ██ ██</span>
+<span class="l3">██  ██ ██       ██   ██  ██ █████  ██  ██ ██████</span>
+<span class="l4">██  ██ ██       ██   ██  ██ ██     ██  ██     ██</span>
+<span class="l5"> ████   ████    ██    ████  ██      ████  ██████</span></div>
     <div class="hero-tagline">Multi-Agent Orchestration OS</div>
     <p class="hero-sub">Five AI agents. One orchestrator. Ship anything.<br>Turn your terminal into a coordinated team that researches, designs, builds, and markets.</p>
   </section>
