@@ -149,15 +149,23 @@
     text-align: center;
     padding: 80px 0 60px;
   }
-  .hero-banner {
+  .hero-crossfade {
+    position: relative;
     width: 100%;
     height: 350px;
-    background: var(--bg-deep);
+    margin-bottom: 24px;
+  }
+  .hero-crossfade > * {
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    margin-bottom: 24px;
+    transition: opacity 1s ease-in-out;
+  }
+  .hero-banner {
+    background: var(--bg-deep);
+    opacity: 1;
   }
   .hero-banner img {
     height: 100%;
@@ -165,13 +173,19 @@
     display: block;
     object-fit: contain;
   }
+  .hero-ascii-wrap {
+    opacity: 0;
+  }
+  .hero-crossfade.show-ascii .hero-banner { opacity: 0; }
+  .hero-crossfade.show-ascii .hero-ascii-wrap { opacity: 1; }
+
   .hero-ascii {
     font-family: 'JetBrains Mono', monospace;
     font-size: 20px;
     line-height: 1.2;
     letter-spacing: 2px;
     text-align: center;
-    margin: 0 auto 20px;
+    margin: 0;
     padding: 0;
     background: none;
     border: none;
@@ -608,14 +622,18 @@
 
 <!-- HERO (full-width, outside container) -->
 <section class="hero">
-    <div class="hero-banner">
-      <img src="img/octopus.png" alt="Octopus: Multi-Agent Orchestration OS">
-    </div>
-    <pre class="hero-ascii" aria-label="OCTOPUS"><span class="l1"> ████   ████  ██████  ████  █████  ██  ██ ██████</span>
+    <div class="hero-crossfade" id="heroCrossfade">
+      <div class="hero-banner">
+        <img src="img/octopus.png" alt="Octopus: Multi-Agent Orchestration OS">
+      </div>
+      <div class="hero-ascii-wrap">
+        <pre class="hero-ascii" aria-label="OCTOPUS"><span class="l1"> ████   ████  ██████  ████  █████  ██  ██ ██████</span>
 <span class="l2">██  ██ ██       ██   ██  ██ ██  ██ ██  ██ ██    </span>
 <span class="l3">██  ██ ██       ██   ██  ██ █████  ██  ██ ██████</span>
 <span class="l4">██  ██ ██       ██   ██  ██ ██     ██  ██     ██</span>
 <span class="l5"> ████   ████    ██    ████  ██      ████  ██████</span></pre>
+      </div>
+    </div>
     <div class="hero-tagline">Multi-Agent Orchestration OS</div>
     <p class="hero-sub">Five AI agents. One orchestrator. Ship anything.<br>Turn your terminal into a coordinated team that researches, designs, builds, and markets.</p>
   </section>
@@ -914,6 +932,11 @@ function showTab(id) {
   event.currentTarget.classList.add('active');
   document.getElementById('tab-' + id).classList.add('active');
 }
+
+// Hero crossfade: alternate between PNG and ASCII art every 3s
+setInterval(() => {
+  document.getElementById('heroCrossfade').classList.toggle('show-ascii');
+}, 3000);
 
 function copyCmd(btn) {
   const code = btn.parentElement.querySelector('.qs-code').textContent.trim();
