@@ -295,26 +295,25 @@
     color: var(--text-primary);
     flex: 1;
     overflow-x: auto;
+    padding-right: 70px;
   }
   .qs-copy {
     position: absolute;
     right: 12px;
     top: 50%;
     transform: translateY(-50%);
-    background: none;
+    background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 4px 8px;
+    border-radius: 6px;
+    padding: 6px 12px;
     cursor: pointer;
-    color: var(--text-dim);
-    font-size: 11px;
+    color: var(--text-secondary);
+    font-size: 12px;
     font-family: 'JetBrains Mono', monospace;
-    transition: color 0.2s, border-color 0.2s;
-    opacity: 0;
-    transition: opacity 0.2s;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
   }
-  .qs-cmd:hover .qs-copy { opacity: 1; }
-  .qs-copy:hover { color: var(--text-primary); border-color: var(--border-glow); }
+  .qs-copy:hover { color: var(--text-primary); border-color: var(--border-glow); background: var(--bg-card-hover); }
+  .qs-copy.copied { color: var(--green); border-color: var(--green); }
   .qs-note {
     font-size: 13px;
     color: var(--text-dim);
@@ -906,10 +905,14 @@ function showTab(id) {
 }
 
 function copyCmd(btn) {
-  const code = btn.parentElement.querySelector('.qs-code').textContent;
+  const code = btn.parentElement.querySelector('.qs-code').textContent.trim();
   navigator.clipboard.writeText(code).then(() => {
     btn.textContent = 'copied!';
-    setTimeout(() => btn.textContent = 'copy', 1500);
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'copy';
+      btn.classList.remove('copied');
+    }, 2000);
   });
 }
 </script>
