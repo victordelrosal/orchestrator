@@ -365,7 +365,7 @@ What would you like to orchestrate?
 
 ## For the Deep Read
 
-The conceptual foundations, research sources, orchestration theory, security model, and anti-patterns catalog live in [`octopus-concept.md`](octopus-concept.md). That document is the ArXiv paper. This one is the OS.
+The conceptual foundations, research sources, orchestration theory, security model, and anti-patterns catalog live in [`octopus-vision.md`](octopus-vision.md). That document is the vision. This one is the OS.
 
 ---
 

@@ -102,8 +102,8 @@ Type these naturally in an Octopus session:
 | [`install.sh`](install.sh) | Terminal command installer. Copies files to `~/.claude/`, adds `octopus()` to `.zshrc`. |
 | [`octopus-banner.sh`](octopus-banner.sh) | 5-color ASCII banner script (one color per agent). |
 | [`.claude/agents/`](.claude/agents/) | Claude Code subagent definitions for all five agent types. |
-| [`octopus-concept.md`](octopus-concept.md) | Conceptual paper: orchestration theory, security models, anti-patterns. |
-| [`octopus-concept-generic.md`](octopus-concept-generic.md) | Platform-agnostic version of the conceptual paper. |
+| [`octopus-vision.md`](octopus-vision.md) | Vision paper: orchestration theory, security models, anti-patterns. |
+| [`octopus-vision-generic.md`](octopus-vision-generic.md) | Platform-agnostic version of the vision paper. |
 | [`octopus-team/`](octopus-team/) | **Team Mode.** Multi-terminal orchestration add-on. Each agent in its own tmux window. |
 
 ## Octopus Team (Multi-Terminal Mode)

@@ -1,7 +1,22 @@
-# The Orchestrator: Operating Manual for the AI Team Lead
+# The Octopus Vision
 
 **For:** The Claude Code instance (Opus 4.6 or Sonnet 4.6) orchestrating an agent team
 **By:** Victor del Rosal / fiveinnolabs, March 2026
+
+---
+
+> **Where we are today (Beta, March 2026)**
+>
+> Octopus currently delivers:
+> - Five specialized agent roles (Researcher, Designer, Maker, Marketer, Manager) with contract-based delegation
+> - Three orchestration modes: sequential pipelines, parallel fan-outs, review loops
+> - Spawn templates for instant agent dispatch
+> - Quality gates between pipeline stages
+> - Filesystem-based handoffs and state tracking
+> - Multi-terminal mode (Octopus Team) with tmux-based parallel execution
+> - Works with Claude Code, Codex CLI, Gemini CLI, OpenCode, or any LLM terminal
+>
+> What follows is the **full vision**: the production-grade framework Octopus is evolving toward. Sections covering security hardening, intent engineering, trust/reputation systems, adaptive monitoring, and hierarchical scaling describe capabilities that are planned but not yet implemented. Think of this document as the architectural north star, not the current feature set.
 
 ---
 
