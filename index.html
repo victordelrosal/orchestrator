@@ -167,12 +167,16 @@
   }
   .hero-ascii {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 18px;
-    line-height: 1.15;
-    letter-spacing: 1px;
+    font-size: 20px;
+    line-height: 1.2;
+    letter-spacing: 2px;
     text-align: center;
-    margin-bottom: 20px;
-    white-space: pre;
+    margin: 0 auto 20px;
+    padding: 0;
+    background: none;
+    border: none;
+    overflow: visible;
+    display: inline-block;
   }
   .hero-ascii .l1 { color: var(--yellow); }
   .hero-ascii .l2 { color: var(--red-orange); }
@@ -607,11 +611,11 @@
     <div class="hero-banner">
       <img src="img/octopus.png" alt="Octopus: Multi-Agent Orchestration OS">
     </div>
-    <div class="hero-ascii" aria-label="OCTOPUS"><span class="l1"> ████   ████  ██████  ████  █████  ██  ██ ██████</span>
-<span class="l2">██  ██ ██       ██   ██  ██ ██  ██ ██  ██ ██</span>
-<span class="l3">██  ██ ██       ██   ██  ██ █████  ██  ██ ██████</span>
-<span class="l4">██  ██ ██       ██   ██  ██ ██     ██  ██     ██</span>
-<span class="l5"> ████   ████    ██    ████  ██      ████  ██████</span></div>
+    <pre class="hero-ascii" aria-label="OCTOPUS"><span class="l1"> ####   ####  ######  ####  #####  ##  ## ######</span>
+<span class="l2">##  ## ##       ##   ##  ## ##  ## ##  ## ##    </span>
+<span class="l3">##  ## ##       ##   ##  ## #####  ##  ## ######</span>
+<span class="l4">##  ## ##       ##   ##  ## ##     ##  ##     ##</span>
+<span class="l5"> ####   ####    ##    ####  ##      ####  ######</span></pre>
     <div class="hero-tagline">Multi-Agent Orchestration OS</div>
     <p class="hero-sub">Five AI agents. One orchestrator. Ship anything.<br>Turn your terminal into a coordinated team that researches, designs, builds, and markets.</p>
   </section>
