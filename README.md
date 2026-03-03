@@ -104,6 +104,20 @@ Type these naturally in an Octopus session:
 | [`.claude/agents/`](.claude/agents/) | Claude Code subagent definitions for all five agent types. |
 | [`octopus-concept.md`](octopus-concept.md) | Conceptual paper: orchestration theory, security models, anti-patterns. |
 | [`octopus-concept-generic.md`](octopus-concept-generic.md) | Platform-agnostic version of the conceptual paper. |
+| [`octopus-team/`](octopus-team/) | **Team Mode.** Multi-terminal orchestration add-on. Each agent in its own tmux window. |
+
+## Octopus Team (Multi-Terminal Mode)
+
+Want each agent in its own terminal with fully isolated context? Octopus Team runs the same five agents across separate tmux windows, coordinating via the filesystem.
+
+```bash
+cd octopus/octopus-team
+bash install-team.sh
+source ~/.zshrc
+octopus-team build a landing page for my SaaS
+```
+
+Research runs first, then Design, then Build + Market in parallel, then Purple synthesizes. Each agent gets only the context it needs. See [`octopus-team/README.md`](octopus-team/README.md) for details.
 
 ## Uninstall
 
