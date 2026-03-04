@@ -764,6 +764,51 @@
   }
   footer a:hover { color: var(--text-primary); }
 
+  /* ── IFACTORY SPRINT ── */
+  .sprint-banner {
+    background: linear-gradient(135deg, #0d0117 0%, #1a0a2e 50%, #0d1a2e 100%);
+    border: 1px solid rgba(156, 39, 176, 0.3);
+    border-radius: 16px;
+    padding: 48px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .sprint-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(156, 39, 176, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 50%, rgba(66, 133, 244, 0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .sprint-headline { font-size: 28px; font-weight: 700; margin-bottom: 8px; line-height: 1.2; }
+  .sprint-sub { font-size: 15px; color: var(--text-secondary); margin-bottom: 32px; max-width: 560px; }
+  .sprint-pipeline {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    gap: 0;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  .sprint-phase { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; text-align: center; }
+  .sprint-phase-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 8px; }
+  .sprint-agents { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+  .sprint-agent-dot { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 20px; background: var(--bg-code); border: 1px solid rgba(255,255,255,0.06); }
+  .sprint-arrow { text-align: center; font-size: 20px; color: var(--text-dim); padding: 0 8px; }
+  .sprint-stats { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 28px; }
+  .sprint-stat { display: flex; flex-direction: column; }
+  .sprint-stat-num { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: var(--purple-light); line-height: 1; }
+  .sprint-stat-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+  .sprint-cmd { display: inline-flex; align-items: center; gap: 12px; background: var(--bg-code); border: 1px solid rgba(156, 39, 176, 0.25); border-radius: 8px; padding: 14px 20px; font-family: 'JetBrains Mono', monospace; font-size: 14px; }
+  .sprint-cmd-prompt { color: var(--purple-light); }
+  .sprint-cmd-text { color: var(--text-primary); }
+  .sprint-cmd-copy { margin-left: 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 5px 12px; cursor: pointer; color: var(--text-secondary); font-size: 12px; font-family: 'JetBrains Mono', monospace; transition: color 0.2s, border-color 0.2s; }
+  .sprint-cmd-copy:hover { color: var(--text-primary); border-color: var(--border-glow); }
+  .sprint-cmd-copy.copied { color: var(--green); border-color: var(--green); }
+  .sprint-note { font-size: 13px; color: var(--text-dim); margin-top: 16px; }
+  .sprint-note a { color: var(--purple-light); text-decoration: none; }
+  .sprint-note a:hover { text-decoration: underline; }
+
   /* ── RESPONSIVE: TABLET ── */
   @media (max-width: 768px) {
     .hero-crossfade { height: 250px; }
@@ -899,6 +944,7 @@
       <a href="#agents">Agents</a>
       <a href="#commands">Commands</a>
       <a href="#how">How It Works</a>
+      <a href="#sprint">iFactory</a>
       <a href="#changelog">Changelog</a>
       <a href="https://github.com/victordelrosal/octopus/blob/main/octopus-vision.md" class="nav-paper" target="_blank">The Paper</a>
       <a href="https://github.com/victordelrosal/octopus" class="nav-gh" target="_blank">
@@ -1117,7 +1163,7 @@
         </tr>
         <tr>
           <td><code>sprint [goal]</code></td>
-          <td class="cmd-desc">Full pipeline: research, design, build, market</td>
+          <td class="cmd-desc"><strong style="color:var(--purple-light)">iFactory:</strong> Autonomous pipeline — 5 agents, 3 phases, SHIP/KILL/PIVOT decision. No human coordination. <a href="#sprint" style="color:var(--purple-light);text-decoration:none;">See how &#x2192;</a></td>
         </tr>
         <tr>
           <td><code>team [tasks]</code></td>
@@ -1133,6 +1179,56 @@
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <!-- IFACTORY SPRINT -->
+  <section class="section" id="sprint">
+    <div class="section-header">
+      <span class="section-chevron">&#x276F;</span>
+      <h2 class="section-title">iFactory: Autonomous Sprint</h2>
+    </div>
+    <div class="sprint-banner">
+      <div class="sprint-headline">Five agents. Three phases. One decision.<br>No human coordination required.</div>
+      <p class="sprint-sub">Type <code style="font-family:'JetBrains Mono',monospace;background:var(--bg-code);padding:2px 8px;border-radius:4px;font-size:13px;">sprint [your goal]</code> and stand back. Purple spawns Yellow + Red in parallel, feeds their outputs to Blue + Green, then synthesizes a SHIP/KILL/PIVOT decision with full VdROS governance. Human role: architect only.</p>
+      <div class="sprint-pipeline">
+        <div class="sprint-phase">
+          <div class="sprint-phase-label">Phase 1 — Parallel</div>
+          <div class="sprint-agents">
+            <span class="sprint-agent-dot"><span style="color:var(--yellow)">&#x25CF;</span> Yellow</span>
+            <span class="sprint-agent-dot"><span style="color:var(--red-orange)">&#x25CF;</span> Red</span>
+          </div>
+        </div>
+        <div class="sprint-arrow">&#x2192;</div>
+        <div class="sprint-phase">
+          <div class="sprint-phase-label">Phase 2 — Parallel</div>
+          <div class="sprint-agents">
+            <span class="sprint-agent-dot"><span style="color:var(--blue)">&#x25CF;</span> Blue</span>
+            <span class="sprint-agent-dot"><span style="color:var(--green)">&#x25CF;</span> Green</span>
+          </div>
+        </div>
+        <div class="sprint-arrow">&#x2192;</div>
+        <div class="sprint-phase">
+          <div class="sprint-phase-label">Phase 3 — Synthesis</div>
+          <div class="sprint-agents">
+            <span class="sprint-agent-dot"><span style="color:var(--purple-light)">&#x25CF;</span> Purple</span>
+          </div>
+        </div>
+      </div>
+      <div class="sprint-stats">
+        <div class="sprint-stat"><span class="sprint-stat-num">~13m</span><span class="sprint-stat-label">problem to decision</span></div>
+        <div class="sprint-stat"><span class="sprint-stat-num">4</span><span class="sprint-stat-label">agents in parallel</span></div>
+        <div class="sprint-stat"><span class="sprint-stat-num">20+</span><span class="sprint-stat-label">files produced</span></div>
+        <div class="sprint-stat"><span class="sprint-stat-num">$0</span><span class="sprint-stat-label">human hours</span></div>
+      </div>
+      <div>
+        <div class="sprint-cmd">
+          <span class="sprint-cmd-prompt">octopus&gt;</span>
+          <span class="sprint-cmd-text">sprint solo founder admin overhead</span>
+          <button class="sprint-cmd-copy" onclick="sprintCopy(this)">copy</button>
+        </div>
+        <p class="sprint-note">Runs <code style="font-family:'JetBrains Mono',monospace;background:var(--bg-code);padding:1px 6px;border-radius:3px;font-size:12px;">ifactory/launch.sh</code> — opens 6 terminal windows, Purple orchestrates autonomously. <a href="https://github.com/victordelrosal/octopus/tree/main/ifactory" target="_blank">View pipeline source &#x2192;</a></p>
+      </div>
+    </div>
   </section>
 
   <!-- HOW IT WORKS -->
@@ -1325,6 +1421,14 @@ function showTab(id) {
     idx++;
   }, 4000);
 })();
+
+function sprintCopy(btn) {
+  navigator.clipboard.writeText('sprint solo founder admin overhead').then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
 
 function copyCmd(btn) {
   const code = btn.parentElement.querySelector('.qs-code').textContent.trim();
