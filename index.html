@@ -560,6 +560,60 @@
     flex-shrink: 0;
   }
 
+  /* ── CHANGELOG ── */
+  .changelog-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .changelog-entry {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 110px 70px 1fr;
+    gap: 16px;
+    align-items: baseline;
+  }
+  .changelog-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .changelog-version {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--purple-light);
+    white-space: nowrap;
+  }
+  .changelog-body {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .changelog-body strong {
+    color: var(--text-primary);
+  }
+  .changelog-body code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--purple-light);
+    background: var(--bg-code);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+  @media (max-width: 480px) {
+    .changelog-entry {
+      grid-template-columns: 1fr;
+      gap: 4px;
+      padding: 18px;
+    }
+    .changelog-body { margin-top: 8px; font-size: 13px; }
+  }
+
   /* ── CTA ── */
   .cta {
     text-align: center;
@@ -754,6 +808,7 @@
       <a href="#agents">Agents</a>
       <a href="#commands">Commands</a>
       <a href="#how">How It Works</a>
+      <a href="#changelog">Changelog</a>
       <a href="https://github.com/victordelrosal/octopus/blob/main/octopus-vision.md" class="nav-paper" target="_blank">The Paper</a>
       <a href="https://github.com/victordelrosal/octopus" class="nav-gh" target="_blank">
         <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
@@ -778,7 +833,7 @@
       </div>
     </div>
     <div class="hero-tagline">Multi-Agent Orchestration OS</div>
-    <p class="hero-sub">Five AI agents. One orchestrator. Ship anything.<br>Turn your terminal into a coordinated team that researches, designs, builds, and markets.</p>
+    <p class="hero-sub">Five AI agents. One orchestrator. Ship anything.<br>Turn your terminal into a coordinated team that researches, designs, builds, markets, and evaluates.</p>
   </section>
 
 <div class="container">
@@ -866,9 +921,9 @@
     <div class="agents-grid">
       <div class="agent-card" data-color="yellow">
         <div class="agent-icon">&#x1F7E1;</div>
-        <div class="agent-name">Researcher</div>
-        <div class="agent-role">Intelligence</div>
-        <div class="agent-desc">Market research, competitor analysis, user interviews, data synthesis. Gathers intelligence and delivers actionable briefs.</div>
+        <div class="agent-name">Researcher &amp; Analyst</div>
+        <div class="agent-role">Intelligence &amp; Evaluation</div>
+        <div class="agent-desc">Two modes, one domain. Scout mode: market research, competitor analysis, data synthesis. Analyst mode: metrics evaluation, kill/pivot/scale recommendations. Intelligence forward and backward.</div>
       </div>
 
       <div class="agent-card" data-color="red-orange">
@@ -918,7 +973,11 @@
       <tbody>
         <tr>
           <td><code>research [topic]</code></td>
-          <td class="cmd-desc">Spawn Yellow Researcher agent for intelligence gathering</td>
+          <td class="cmd-desc">Spawn Yellow Researcher agent (Scout mode) for intelligence gathering</td>
+        </tr>
+        <tr>
+          <td><code>evaluate [target]</code></td>
+          <td class="cmd-desc">Spawn Yellow Analyst agent (Evaluate mode) for metrics and kill/pivot/scale decisions</td>
         </tr>
         <tr>
           <td><code>design [brief]</code></td>
@@ -1039,6 +1098,31 @@ M ──┼── B ──┼── M
       <div class="principle-item">
         <span class="principle-num">06</span>
         <span><strong>Ship over perfect.</strong> The goal is working output, not theoretical elegance.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHANGELOG -->
+  <section class="section" id="changelog">
+    <div class="section-header">
+      <span class="section-chevron">&#x276F;</span>
+      <h2 class="section-title">Changelog</h2>
+    </div>
+
+    <div class="changelog-list">
+      <div class="changelog-entry">
+        <div class="changelog-date">2026-03-04</div>
+        <div class="changelog-version">v1.1.0</div>
+        <div class="changelog-body">
+          <strong>Yellow agent expanded: Researcher &amp; Analyst.</strong> The Researcher (Yellow) now operates in two modes: Scout mode (forward-looking market research) and Analyst mode (backward-looking evaluation with KILL / PIVOT / SCALE recommendations). New <code>evaluate [target]</code> command added. Quality gates updated to reflect the full six-stage pipeline: Research, Design, Build, Deploy, Distribute, Evaluate. Task Force recommendations implemented across CLAUDE.md, octopus.md, and index.html.
+        </div>
+      </div>
+      <div class="changelog-entry">
+        <div class="changelog-date">2026-03-03</div>
+        <div class="changelog-version">v1.0.0</div>
+        <div class="changelog-body">
+          <strong>Initial release.</strong> Five-agent orchestration OS with sequential, parallel, and review loop modes. Yellow Researcher, Red-Orange Designer, Blue Maker, Green Marketer, Purple Manager. CLI installer, portable octopus.md, vision document. Platform-agnostic: works with Claude Code, Codex CLI, Gemini CLI, OpenCode, or any LLM terminal with tool use.
+        </div>
       </div>
     </div>
   </section>
