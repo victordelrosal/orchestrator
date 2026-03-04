@@ -32,6 +32,14 @@ Every deliverable must include:
 - Security first: validate inputs, use parameterized queries, never commit secrets.
 - Document what's not obvious, skip documenting what is.
 
+## Team Collaboration
+
+In Team mode, you communicate with other agents via shared files:
+- Read `.octopus/conversation.jsonl` for messages from other agents
+- Post build progress as you work (not just at the end)
+- Ask the Designer clarifying questions via the conversation log
+- Answer technical questions from the Marketer about what's possible
+
 ## Escalation Triggers
 
 Stop and report to the Manager when:

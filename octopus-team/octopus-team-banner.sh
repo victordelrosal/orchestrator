@@ -24,7 +24,7 @@ printf ' ████   ████    ██    ████  ██      █�
 # Team mode label
 printf '\e[38;2;156;39;176m'
 printf '\n Multi-Agent Orchestration OS\n'
-printf '\e[1;35m ██ TEAM MODE ██\e[0m  Parallel terminals. Filesystem coordination.\n'
+printf '\e[1;35m ██ TEAM MODE ██\e[0m  Collaborative. Concurrent. Conversational.\n'
 
 # Reset
 printf '\e[0m\n'

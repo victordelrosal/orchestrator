@@ -1,42 +1,83 @@
 #!/bin/bash
-# Octopus Team Orchestrator
-# Manages multi-terminal agent sessions via tmux + filesystem coordination.
+# Octopus Team Orchestrator v2 - Collaborative Mode
+# All agents spawn concurrently and converse via shared blackboard + conversation log.
+# Agents with dependencies poll for prerequisite files from upstream agents.
+#
+# Architecture:
+#   blackboard.md        - Human-readable mission board (Purple maintains)
+#   conversation.jsonl   - Append-only inter-agent chat log
+#   board/{agent}.md     - Per-agent status (each agent owns its own file)
+#   handoffs/{NN}-*.md   - Final deliverables
+#   state/{NN}-*         - Completion signals
 #
 # Usage: orchestrate.sh <model> <goal>
-# Called by the octopus-team() shell function. Not meant to be run directly.
+# Called by the octopus-team() shell function.
 
 set -e
 
 MODEL="${1:?Usage: orchestrate.sh <model> <goal>}"
 GOAL="${2:?Usage: orchestrate.sh <model> <goal>}"
-TEAM_DIR="$(cd "$(dirname "$0")" && pwd)"
 WORK_DIR="$(pwd)/.octopus"
 SESSION="octopus-team-$$"
 
 # Colors
-P='\033[1;35m'  # Purple
-Y='\033[1;33m'  # Yellow
-R='\033[1;31m'  # Red-Orange
-B='\033[1;34m'  # Blue
-G='\033[1;32m'  # Green
-D='\033[0;90m'  # Dim
-W='\033[1;37m'  # White
-RST='\033[0m'
+P='\033[1;35m'  Y='\033[1;33m'  R='\033[1;31m'
+B='\033[1;34m'  G='\033[1;32m'  D='\033[0;90m'
+W='\033[1;37m'  RST='\033[0m'
 
-# ── Setup workspace ──
-mkdir -p "$WORK_DIR"/{tasks,handoffs,state}
+# ── Setup workspace ──────────────────────────────────────────────────────────
+mkdir -p "$WORK_DIR"/{tasks,handoffs,state,board,prompts,launch}
 echo "pending" > "$WORK_DIR/state/pipeline"
+echo "pending" > "$WORK_DIR/state/01-research"
+echo "pending" > "$WORK_DIR/state/02-design"
+echo "pending" > "$WORK_DIR/state/03-build"
+echo "pending" > "$WORK_DIR/state/04-market"
+: > "$WORK_DIR/conversation.jsonl"
+
+# ── Create initial blackboard ────────────────────────────────────────────────
+cat > "$WORK_DIR/blackboard.md" << BOARD
+# Octopus Blackboard
+
+## Mission
+$GOAL
+
+## Agent Status
+| Agent | Color | Status | Role |
+|-------|-------|--------|------|
+| Researcher & Analyst | Yellow | SPAWNING | Scout mode: research the opportunity |
+| Designer | Red-Orange | SPAWNING | Wait for research, then design |
+| Maker | Blue | SPAWNING | Wait for design spec, then build |
+| Marketer | Green | SPAWNING | Wait for design spec, then create assets |
+| Manager | Purple | ORCHESTRATING | Decomposing goal, monitoring team |
+
+## Decisions
+(Purple posts decisions here)
+
+## Blockers
+(none)
+BOARD
 
 echo ""
-echo -e "${P}  ██ OCTOPUS TEAM ██${RST}"
+echo -e "${P}  ██ OCTOPUS TEAM ██  ${W}Collaborative Mode${RST}"
 echo -e "${D}  Workspace: $WORK_DIR${RST}"
 echo ""
-echo -e "${W}  Goal:${RST} $GOAL"
+echo -e "  ${W}Goal:${RST} $GOAL"
 echo ""
 
-# ── Stage 1: Purple Manager decomposes the goal ──
+# ── Conversation helper ──────────────────────────────────────────────────────
+post_msg() {
+  local from="$1" to="$2" type="$3" body="$4"
+  local ts
+  ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  local escaped_body
+  escaped_body=$(printf '%s' "$body" | sed 's/"/\\"/g' | tr '\n' ' ')
+  printf '{"ts":"%s","from":"%s","to":"%s","type":"%s","body":"%s"}\n' \
+    "$ts" "$from" "$to" "$type" "$escaped_body" >> "$WORK_DIR/conversation.jsonl"
+}
+
+# ── Stage 1: Purple decomposes the goal ──────────────────────────────────────
 echo -e "${P}  [Purple Manager]${RST} Decomposing goal into agent tasks..."
-echo ""
+post_msg "purple" "all" "status" "Decomposing goal into agent tasks."
 
 DECOMPOSE_PROMPT="You are the Purple Manager of the Octopus multi-agent team.
 
@@ -44,10 +85,10 @@ GOAL: $GOAL
 
 Decompose this goal into exactly 4 task files. Write each file to the paths below.
 Each file must contain a complete, self-contained task brief for the receiving agent.
-Include all context the agent needs. The agent will NOT see other agents' tasks.
+Include all context the agent needs.
 
 Write these files:
-1. $WORK_DIR/tasks/01-research.md   (for Yellow Researcher)
+1. $WORK_DIR/tasks/01-research.md   (for Yellow Researcher & Analyst)
 2. $WORK_DIR/tasks/02-design.md     (for Red-Orange Designer)
 3. $WORK_DIR/tasks/03-build.md      (for Blue Maker)
 4. $WORK_DIR/tasks/04-market.md     (for Green Marketer)
@@ -64,225 +105,362 @@ Format each file as:
 ## Constraints
 [scope limits, what NOT to do]
 
-After writing all 4 files, write a pipeline plan to $WORK_DIR/state/plan.md explaining:
-- Which stages run sequentially vs parallel
-- Dependencies between stages
-- Expected handoff sequence
+After writing all 4 files, write a pipeline plan to $WORK_DIR/state/plan.md explaining
+which stages run in parallel and what the dependencies are.
 
 IMPORTANT: Write all files now. Do not ask questions. Decompose and dispatch."
 
 claude --dangerously-skip-permissions --model "$MODEL" -p "$DECOMPOSE_PROMPT" > /dev/null 2>&1
 
-# Verify decomposition worked
+# Verify decomposition
 if [[ ! -f "$WORK_DIR/tasks/01-research.md" ]]; then
   echo -e "${R}  Error: Decomposition failed. No task files created.${RST}"
   exit 1
 fi
 
-echo -e "${P}  [Purple Manager]${RST} Tasks decomposed:"
+echo -e "${P}  [Purple Manager]${RST} Tasks decomposed."
 for f in "$WORK_DIR"/tasks/*.md; do
   echo -e "    ${D}$(basename "$f")${RST}"
 done
-if [[ -f "$WORK_DIR/state/plan.md" ]]; then
-  echo -e "    ${D}state/plan.md${RST}"
-fi
 echo ""
+post_msg "purple" "all" "status" "All tasks decomposed. Spawning 5 agents concurrently."
 
-# ── Stage 2: Sequential Research > Design, then Parallel Build + Market ──
-# Research first (Designer needs the brief)
-echo -e "${Y}  [Yellow Researcher]${RST} Spawning in tmux..."
-echo "running" > "$WORK_DIR/state/01-research"
+# ── Shared conversation protocol ─────────────────────────────────────────────
+# This text is embedded in every agent prompt so they know how to converse.
 
-RESEARCH_PROMPT="You are the Yellow Researcher agent of the Octopus team.
+CONVO_PROTOCOL="
+## CONVERSATION PROTOCOL (READ THIS CAREFULLY)
+You are part of a collaborative multi-agent team. All 5 agents run concurrently
+in separate terminals and communicate via shared files.
 
-$(cat "$WORK_DIR/tasks/01-research.md")
+### Reading messages from other agents
+- Read $WORK_DIR/conversation.jsonl to see messages from other agents.
+- Each line is JSON: {ts, from, to, type, body}
+- Types: status, finding, question, answer, decision, blocker
 
-INSTRUCTIONS:
-1. Do the research thoroughly using web search and any tools available.
-2. Write your complete findings to: $WORK_DIR/handoffs/01-research-brief.md
-3. The brief must be self-contained. The Designer will read ONLY this file.
-4. When done, write the single word 'done' to: $WORK_DIR/state/01-research
+### Posting messages
+- Use bash to append to the conversation log:
+  echo '{\"ts\":\"\$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"from\":\"YOUR_COLOR\",\"to\":\"all\",\"type\":\"finding\",\"body\":\"Your message\"}' >> $WORK_DIR/conversation.jsonl
+- Post status updates when you start, make progress, and finish.
+- Post findings that other agents should know about.
+- Post questions when you need input from another agent.
 
-FORMAT your brief as markdown with:
-- Executive summary (3-5 bullet points)
-- Detailed findings with sources
-- Key takeaways and recommendations
-- Anything the Designer needs to know"
+### Between major steps
+- Read conversation.jsonl to check for questions directed at you.
+- If another agent asked you something, answer before continuing.
 
-tmux new-session -d -s "$SESSION" -n "researcher" \
-  "printf '\e[38;2;255;193;7m[Yellow Researcher]\e[0m\n\n'; claude --dangerously-skip-permissions --model $MODEL -p \"$RESEARCH_PROMPT\" 2>&1; echo 'done' > '$WORK_DIR/state/01-research'; read -p 'Press enter to close...'"
+### Your status board
+- Write your current status to $WORK_DIR/board/YOUR_COLOR.md
+- Update it as your work progresses.
+"
 
-echo -e "${Y}  [Yellow Researcher]${RST} Working... (tmux session: $SESSION)"
+# ── Build agent prompts ──────────────────────────────────────────────────────
 
-# Wait for research to complete
-echo -e "${D}  Waiting for research to complete...${RST}"
-while [[ "$(cat "$WORK_DIR/state/01-research" 2>/dev/null)" != "done" ]]; do
-  sleep 3
+# Yellow Researcher (no dependencies, starts immediately)
+YELLOW_TASK=""
+[[ -f "$WORK_DIR/tasks/01-research.md" ]] && YELLOW_TASK=$(cat "$WORK_DIR/tasks/01-research.md")
+
+cat > "$WORK_DIR/prompts/yellow.md" << YELLOWEOF
+You are the Yellow Researcher & Analyst agent of the Octopus team.
+
+## Your Task
+$YELLOW_TASK
+
+$CONVO_PROTOCOL
+
+Replace YOUR_COLOR with "yellow" in all conversation messages.
+
+## Dependencies
+None. You start immediately. Other agents are waiting for your research.
+
+## Instructions
+1. Post a status message to conversation.jsonl: you are starting research.
+2. Research thoroughly using web search and all tools available.
+3. Post key findings to conversation.jsonl as you discover them (type: "finding").
+   This lets the Designer start preparing while you work.
+4. Write your complete research brief to: $WORK_DIR/handoffs/01-research-brief.md
+   Format: Executive summary, detailed findings with sources, key takeaways,
+   recommendations, and anything the Designer needs to know.
+5. Post a final status message: research complete.
+6. Write the single word 'done' to: $WORK_DIR/state/01-research
+
+IMPORTANT: Post findings AS you discover them, not just at the end.
+The Designer is waiting and can start work once they see your early findings.
+YELLOWEOF
+
+# Red-Orange Designer (depends on Yellow)
+DESIGN_TASK=""
+[[ -f "$WORK_DIR/tasks/02-design.md" ]] && DESIGN_TASK=$(cat "$WORK_DIR/tasks/02-design.md")
+
+cat > "$WORK_DIR/prompts/red-orange.md" << ROEOF
+You are the Red-Orange Designer agent of the Octopus team.
+
+## Your Task
+$DESIGN_TASK
+
+$CONVO_PROTOCOL
+
+Replace YOUR_COLOR with "red-orange" in all conversation messages.
+
+## Dependencies
+You need the Yellow Researcher's brief before you can finalize your design.
+The brief will appear at: $WORK_DIR/handoffs/01-research-brief.md
+
+## Instructions
+1. Post a status message: you are preparing while waiting for research.
+2. Read conversation.jsonl for any early findings from Yellow.
+3. While the research brief does not exist yet, you CAN:
+   - Study the goal and start thinking about architecture
+   - Post questions to Yellow via conversation.jsonl
+   - Sketch preliminary ideas based on early findings
+4. Check periodically if the research brief exists using bash:
+   if [ -f "$WORK_DIR/handoffs/01-research-brief.md" ]; then echo "ready"; fi
+   If not ready, read conversation.jsonl for updates, then check again in 30 seconds.
+   Repeat until the file appears.
+5. Once the brief exists, read it and create your design.
+6. Post key design decisions to conversation.jsonl as you make them (type: "finding").
+7. Write your complete design spec to: $WORK_DIR/handoffs/02-design-spec.md
+   Include: design overview, architecture, wireframes (ASCII), component specs,
+   technical requirements for the Maker, copy/messaging guidance for the Marketer.
+8. Post a final status: design complete.
+9. Write 'done' to: $WORK_DIR/state/02-design
+
+IMPORTANT: Post design decisions early. The Maker and Marketer are waiting.
+ROEOF
+
+# Blue Maker (depends on Red-Orange)
+BUILD_TASK=""
+[[ -f "$WORK_DIR/tasks/03-build.md" ]] && BUILD_TASK=$(cat "$WORK_DIR/tasks/03-build.md")
+
+cat > "$WORK_DIR/prompts/blue.md" << BLUEEOF
+You are the Blue Maker agent of the Octopus team.
+
+## Your Task
+$BUILD_TASK
+
+$CONVO_PROTOCOL
+
+Replace YOUR_COLOR with "blue" in all conversation messages.
+
+## Dependencies
+You need the Red-Orange Designer's spec before you can build.
+The spec will appear at: $WORK_DIR/handoffs/02-design-spec.md
+You also benefit from the research brief at: $WORK_DIR/handoffs/01-research-brief.md
+
+## Instructions
+1. Post a status message: you are preparing while waiting for design spec.
+2. Read conversation.jsonl for early findings and design decisions.
+3. While the design spec does not exist yet, you CAN:
+   - Set up your development environment
+   - Read early findings and design decisions from conversation.jsonl
+   - Post technical questions to the Designer or Researcher
+4. Check periodically if the design spec exists using bash:
+   if [ -f "$WORK_DIR/handoffs/02-design-spec.md" ]; then echo "ready"; fi
+   If not ready, read conversation.jsonl, then check again in 30 seconds.
+   Repeat until the file appears.
+5. Read the design spec (and research brief if available).
+6. Build exactly what the spec describes.
+7. Post progress updates to conversation.jsonl as you build (type: "status").
+8. Write a build summary to: $WORK_DIR/handoffs/03-build-done.md
+   Include: files created/modified, how to verify, test results, known limitations.
+9. Post a final status: build complete.
+10. Write 'done' to: $WORK_DIR/state/03-build
+
+Security: validate inputs, no hardcoded secrets, use parameterized queries.
+BLUEEOF
+
+# Green Marketer (depends on Red-Orange)
+MARKET_TASK=""
+[[ -f "$WORK_DIR/tasks/04-market.md" ]] && MARKET_TASK=$(cat "$WORK_DIR/tasks/04-market.md")
+
+cat > "$WORK_DIR/prompts/green.md" << GREENEOF
+You are the Green Marketer agent of the Octopus team.
+
+## Your Task
+$MARKET_TASK
+
+$CONVO_PROTOCOL
+
+Replace YOUR_COLOR with "green" in all conversation messages.
+
+## Dependencies
+You need the Red-Orange Designer's spec for messaging and positioning.
+The spec will appear at: $WORK_DIR/handoffs/02-design-spec.md
+You benefit from the research brief at: $WORK_DIR/handoffs/01-research-brief.md
+
+## Instructions
+1. Post a status message: you are preparing while waiting for design spec.
+2. Read conversation.jsonl for early findings and design decisions.
+3. While the design spec does not exist yet, you CAN:
+   - Research the target audience using web search
+   - Read early findings from Yellow in conversation.jsonl
+   - Post positioning questions to conversation.jsonl
+4. Check periodically if the design spec exists using bash:
+   if [ -f "$WORK_DIR/handoffs/02-design-spec.md" ]; then echo "ready"; fi
+   If not ready, read conversation.jsonl, then check again in 30 seconds.
+   Repeat until the file appears.
+5. Read the design spec and research brief.
+6. Create all marketing and distribution assets.
+7. Post progress to conversation.jsonl.
+8. Write your deliverables to: $WORK_DIR/handoffs/04-market-assets.md
+   Include: audience definition, positioning, all copy/assets, channel strategy, metrics.
+9. Post a final status: marketing complete.
+10. Write 'done' to: $WORK_DIR/state/04-market
+GREENEOF
+
+# Purple Manager (monitors all, synthesizes at end)
+cat > "$WORK_DIR/prompts/purple.md" << PURPLEEOF
+You are the Purple Manager of the Octopus team. You are the orchestrator.
+
+## Mission
+$GOAL
+
+All four specialist agents are running concurrently in separate terminals.
+Your job is to monitor their conversation, coordinate, resolve blockers, and synthesize.
+
+$CONVO_PROTOCOL
+
+Replace YOUR_COLOR with "purple" in all conversation messages.
+
+## Phase 1: Monitor and Coordinate
+While agents are working:
+1. Read $WORK_DIR/conversation.jsonl every 30-60 seconds.
+2. When agents post questions, provide answers or route them to the right agent.
+3. When agents post blockers, help resolve them.
+4. Post decisions to conversation.jsonl (type: "decision") when choices need to be made.
+5. Update $WORK_DIR/blackboard.md with key decisions and status changes.
+
+## Phase 2: Wait for All Agents
+Monitor these state files until all show 'done':
+- $WORK_DIR/state/01-research (Yellow)
+- $WORK_DIR/state/02-design (Red-Orange)
+- $WORK_DIR/state/03-build (Blue)
+- $WORK_DIR/state/04-market (Green)
+
+Use bash to check:
+while [ "\$(cat $WORK_DIR/state/01-research 2>/dev/null)" != "done" ] || \\
+      [ "\$(cat $WORK_DIR/state/02-design 2>/dev/null)" != "done" ] || \\
+      [ "\$(cat $WORK_DIR/state/03-build 2>/dev/null)" != "done" ] || \\
+      [ "\$(cat $WORK_DIR/state/04-market 2>/dev/null)" != "done" ]; do
+  sleep 15
 done
-echo -e "${Y}  [Yellow Researcher]${RST} Done."
+
+Between checks, read conversation.jsonl and respond to any questions.
+
+## Phase 3: Synthesize
+Once all agents are done:
+1. Read all handoff files:
+   - $WORK_DIR/handoffs/01-research-brief.md (Yellow)
+   - $WORK_DIR/handoffs/02-design-spec.md (Red-Orange)
+   - $WORK_DIR/handoffs/03-build-done.md (Blue)
+   - $WORK_DIR/handoffs/04-market-assets.md (Green)
+2. Integrate Marketer's copy into Maker's build (edit files directly if needed).
+3. Verify the output works (run it, check it, test it).
+4. Write a synthesis report to: $WORK_DIR/handoffs/05-synthesis.md
+   Include: what was accomplished, all artifacts (file paths), quality assessment,
+   key decisions from the conversation, and remaining work.
+5. Update $WORK_DIR/blackboard.md with final status.
+6. Post a final message to conversation.jsonl: synthesis complete.
+7. Write 'done' to: $WORK_DIR/state/pipeline
+PURPLEEOF
+
+# ── Create launcher scripts ──────────────────────────────────────────────────
+create_launcher() {
+  local agent="$1" color_code="$2" label="$3" state_file="$4"
+  cat > "$WORK_DIR/launch/$agent.sh" << LAUNCHER
+#!/bin/bash
+printf '\e[${color_code}m[$label]\e[0m\n'
+printf '\e[0;90mBlackboard:   $WORK_DIR/blackboard.md\e[0m\n'
+printf '\e[0;90mConversation: $WORK_DIR/conversation.jsonl\e[0m\n\n'
+claude --dangerously-skip-permissions --model $MODEL -p "\$(cat '$WORK_DIR/prompts/$agent.md')" 2>&1
+echo 'done' > '$WORK_DIR/state/$state_file'
+echo ""
+printf '\e[${color_code}m[$label] Complete. Press enter to close.\e[0m\n'
+read
+LAUNCHER
+  chmod +x "$WORK_DIR/launch/$agent.sh"
+}
+
+create_launcher "yellow"     "38;2;255;193;7"  "Yellow Researcher & Analyst" "01-research"
+create_launcher "red-orange" "38;2;255;87;34"  "Red-Orange Designer"         "02-design"
+create_launcher "blue"       "38;2;66;133;244" "Blue Maker"                  "03-build"
+create_launcher "green"      "38;2;76;175;80"  "Green Marketer"              "04-market"
+create_launcher "purple"     "38;2;156;39;176" "Purple Manager"              "pipeline"
+
+# ── Spawn ALL agents concurrently ────────────────────────────────────────────
+echo -e "${P}  Spawning all 5 agents concurrently...${RST}"
 echo ""
 
-# ── Stage 3: Designer (needs research brief) ──
-echo -e "${R}  [Red-Orange Designer]${RST} Spawning..."
-echo "running" > "$WORK_DIR/state/02-design"
+tmux new-session -d -s "$SESSION" -n "researcher" "$WORK_DIR/launch/yellow.sh"
+echo -e "  ${Y}[0] Yellow${RST}       Researcher & Analyst  ${D}(starts immediately)${RST}"
 
-RESEARCH_BRIEF=""
-if [[ -f "$WORK_DIR/handoffs/01-research-brief.md" ]]; then
-  RESEARCH_BRIEF="$(cat "$WORK_DIR/handoffs/01-research-brief.md")"
-fi
+tmux new-window -t "$SESSION" -n "designer" "$WORK_DIR/launch/red-orange.sh"
+echo -e "  ${R}[1] Red-Orange${RST}  Designer               ${D}(polls for research brief)${RST}"
 
-DESIGN_PROMPT="You are the Red-Orange Designer agent of the Octopus team.
+tmux new-window -t "$SESSION" -n "maker" "$WORK_DIR/launch/blue.sh"
+echo -e "  ${B}[2] Blue${RST}        Maker                  ${D}(polls for design spec)${RST}"
 
-$(cat "$WORK_DIR/tasks/02-design.md")
+tmux new-window -t "$SESSION" -n "marketer" "$WORK_DIR/launch/green.sh"
+echo -e "  ${G}[3] Green${RST}       Marketer               ${D}(polls for design spec)${RST}"
 
-## Research Brief (from Yellow Researcher)
-$RESEARCH_BRIEF
+tmux new-window -t "$SESSION" -n "manager" "$WORK_DIR/launch/purple.sh"
+echo -e "  ${P}[4] Purple${RST}      Manager                ${D}(monitoring + synthesis)${RST}"
 
-INSTRUCTIONS:
-1. Use the research brief above as your foundation.
-2. Create a complete design spec.
-3. Write your output to: $WORK_DIR/handoffs/02-design-spec.md
-4. The Maker and Marketer will read ONLY this file (plus the research brief).
-5. When done, write the single word 'done' to: $WORK_DIR/state/02-design
+echo ""
+echo -e "${P}  All agents spawned. Collaborative mode active.${RST}"
+echo -e "${D}  tmux session: $SESSION${RST}"
+echo ""
+post_msg "purple" "all" "status" "All 5 agents spawned. Collaborative mode active."
 
-FORMAT your spec as markdown with:
-- Design overview and rationale
-- Detailed component specs (ASCII wireframes if applicable)
-- Technical requirements for the Maker
-- Copy/messaging guidance for the Marketer"
-
-tmux new-window -t "$SESSION" -n "designer" \
-  "printf '\e[38;2;255;87;34m[Red-Orange Designer]\e[0m\n\n'; claude --dangerously-skip-permissions --model $MODEL -p \"$DESIGN_PROMPT\" 2>&1; echo 'done' > '$WORK_DIR/state/02-design'; read -p 'Press enter to close...'"
-
-echo -e "${D}  Waiting for design to complete...${RST}"
-while [[ "$(cat "$WORK_DIR/state/02-design" 2>/dev/null)" != "done" ]]; do
-  sleep 3
-done
-echo -e "${R}  [Red-Orange Designer]${RST} Done."
+# ── Live conversation monitor ────────────────────────────────────────────────
+echo -e "${W}  ── Live Conversation ──${RST}"
+echo -e "${D}  Showing inter-agent messages. Ctrl+C to skip to tmux.${RST}"
 echo ""
 
-# ── Stage 4: Parallel - Maker + Marketer ──
-echo -e "${B}  [Blue Maker]${RST} + ${G}[Green Marketer]${RST} Spawning in parallel..."
+LAST_LINE_COUNT=0
+SKIP_MONITOR=0
+trap 'SKIP_MONITOR=1' INT
 
-DESIGN_SPEC=""
-if [[ -f "$WORK_DIR/handoffs/02-design-spec.md" ]]; then
-  DESIGN_SPEC="$(cat "$WORK_DIR/handoffs/02-design-spec.md")"
-fi
+while [[ "$SKIP_MONITOR" -eq 0 ]]; do
+  # Check if pipeline is done
+  SP=$(cat "$WORK_DIR/state/pipeline" 2>/dev/null)
+  if [[ "$SP" == "done" ]]; then
+    break
+  fi
 
-echo "running" > "$WORK_DIR/state/03-build"
-echo "running" > "$WORK_DIR/state/04-market"
+  # Print new conversation messages
+  CURRENT_LINES=$(wc -l < "$WORK_DIR/conversation.jsonl" 2>/dev/null | tr -d ' ')
+  CURRENT_LINES=${CURRENT_LINES:-0}
 
-BUILD_PROMPT="You are the Blue Maker agent of the Octopus team.
+  if [[ "$CURRENT_LINES" -gt "$LAST_LINE_COUNT" ]]; then
+    tail -n +"$((LAST_LINE_COUNT + 1))" "$WORK_DIR/conversation.jsonl" | \
+      head -n "$((CURRENT_LINES - LAST_LINE_COUNT))" | \
+      while IFS= read -r line; do
+        FROM=$(printf '%s' "$line" | sed -n 's/.*"from":"\([^"]*\)".*/\1/p')
+        TYPE=$(printf '%s' "$line" | sed -n 's/.*"type":"\([^"]*\)".*/\1/p')
+        BODY=$(printf '%s' "$line" | sed -n 's/.*"body":"\([^"]*\)".*/\1/p')
 
-$(cat "$WORK_DIR/tasks/03-build.md")
+        case "$FROM" in
+          yellow)     FC="${Y}" ;;
+          red-orange) FC="${R}" ;;
+          blue)       FC="${B}" ;;
+          green)      FC="${G}" ;;
+          purple)     FC="${P}" ;;
+          *)          FC="${D}" ;;
+        esac
 
-## Design Spec (from Red-Orange Designer)
-$DESIGN_SPEC
+        SHORT=$(printf '%.90s' "$BODY")
+        echo -e "  ${FC}[$FROM]${RST} ${D}$TYPE${RST} $SHORT"
+      done
+    LAST_LINE_COUNT=$CURRENT_LINES
+  fi
 
-## Research Brief (from Yellow Researcher)
-$RESEARCH_BRIEF
-
-INSTRUCTIONS:
-1. Build exactly what the design spec describes.
-2. Write working code, create files as needed in the current project directory.
-3. Write a build summary to: $WORK_DIR/handoffs/03-build-done.md
-4. When done, write the single word 'done' to: $WORK_DIR/state/03-build
-
-Your build summary should list:
-- All files created/modified
-- How to run/verify the output
-- Any deviations from the spec (with rationale)"
-
-MARKET_PROMPT="You are the Green Marketer agent of the Octopus team.
-
-$(cat "$WORK_DIR/tasks/04-market.md")
-
-## Design Spec (from Red-Orange Designer)
-$DESIGN_SPEC
-
-## Research Brief (from Yellow Researcher)
-$RESEARCH_BRIEF
-
-INSTRUCTIONS:
-1. Create all marketing/distribution assets described in your task.
-2. Write copy, meta tags, social assets, or whatever is needed.
-3. Write your output to: $WORK_DIR/handoffs/04-market-assets.md
-4. When done, write the single word 'done' to: $WORK_DIR/state/04-market
-
-Your output should include:
-- All copy/content ready to use
-- File paths for any created assets
-- Distribution recommendations"
-
-tmux new-window -t "$SESSION" -n "maker" \
-  "printf '\e[38;2;66;133;244m[Blue Maker]\e[0m\n\n'; claude --dangerously-skip-permissions --model $MODEL -p \"$BUILD_PROMPT\" 2>&1; echo 'done' > '$WORK_DIR/state/03-build'; read -p 'Press enter to close...'"
-
-tmux new-window -t "$SESSION" -n "marketer" \
-  "printf '\e[38;2;76;175;80m[Green Marketer]\e[0m\n\n'; claude --dangerously-skip-permissions --model $MODEL -p \"$MARKET_PROMPT\" 2>&1; echo 'done' > '$WORK_DIR/state/04-market'; read -p 'Press enter to close...'"
-
-echo -e "${B}  [Blue Maker]${RST}      Building... (parallel)"
-echo -e "${G}  [Green Marketer]${RST}  Writing... (parallel)"
-echo ""
-
-# Wait for both
-echo -e "${D}  Waiting for parallel stage to complete...${RST}"
-while [[ "$(cat "$WORK_DIR/state/03-build" 2>/dev/null)" != "done" ]] || \
-      [[ "$(cat "$WORK_DIR/state/04-market" 2>/dev/null)" != "done" ]]; do
-  sleep 3
-done
-echo -e "${B}  [Blue Maker]${RST}      Done."
-echo -e "${G}  [Green Marketer]${RST}  Done."
-echo ""
-
-# ── Stage 5: Purple Manager synthesizes ──
-echo -e "${P}  [Purple Manager]${RST} Synthesizing all outputs..."
-
-BUILD_DONE=""
-MARKET_DONE=""
-if [[ -f "$WORK_DIR/handoffs/03-build-done.md" ]]; then
-  BUILD_DONE="$(cat "$WORK_DIR/handoffs/03-build-done.md")"
-fi
-if [[ -f "$WORK_DIR/handoffs/04-market-assets.md" ]]; then
-  MARKET_DONE="$(cat "$WORK_DIR/handoffs/04-market-assets.md")"
-fi
-
-SYNTH_PROMPT="You are the Purple Manager of the Octopus team. All agents have completed their work.
-
-ORIGINAL GOAL: $GOAL
-
-## Research Brief (Yellow)
-$RESEARCH_BRIEF
-
-## Design Spec (Red-Orange)
-$DESIGN_SPEC
-
-## Build Summary (Blue)
-$BUILD_DONE
-
-## Marketing Assets (Green)
-$MARKET_DONE
-
-YOUR JOB:
-1. Review all four outputs for coherence and completeness.
-2. Integrate the Marketer's copy into the Maker's build if applicable (edit files directly).
-3. Write a final synthesis report to: $WORK_DIR/handoffs/05-synthesis.md
-4. List any gaps, conflicts, or follow-up items.
-5. Verify the final output works (run it, check it, test it).
-
-The synthesis report should include:
-- What was accomplished
-- All artifacts created (with file paths)
-- Quality assessment
-- Any remaining work needed"
-
-tmux new-window -t "$SESSION" -n "manager" \
-  "printf '\e[38;2;156;39;176m[Purple Manager] Synthesizing...\e[0m\n\n'; claude --dangerously-skip-permissions --model $MODEL -p \"$SYNTH_PROMPT\" 2>&1; echo 'done' > '$WORK_DIR/state/pipeline'; read -p 'Press enter to close...'"
-
-echo -e "${D}  Waiting for synthesis...${RST}"
-while [[ "$(cat "$WORK_DIR/state/pipeline" 2>/dev/null)" != "done" ]]; do
-  sleep 3
+  sleep 5
 done
 
+trap - INT
+
+# ── Summary ──────────────────────────────────────────────────────────────────
 echo ""
 echo -e "${P}  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
 echo -e "${P}  OCTOPUS TEAM: COMPLETE${RST}"
@@ -290,13 +468,22 @@ echo -e "${P}  ━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 echo -e "  ${W}Artifacts:${RST}"
 for f in "$WORK_DIR"/handoffs/*.md; do
-  echo -e "    ${D}$f${RST}"
+  [[ -f "$f" ]] && echo -e "    ${D}$f${RST}"
 done
 echo ""
-echo -e "  ${W}Synthesis:${RST} $WORK_DIR/handoffs/05-synthesis.md"
-echo -e "  ${W}tmux session:${RST} $SESSION (use 'tmux attach -t $SESSION' to review agent logs)"
+
+MSG_COUNT=$(wc -l < "$WORK_DIR/conversation.jsonl" 2>/dev/null | tr -d ' ')
+MSG_COUNT=${MSG_COUNT:-0}
+echo -e "  ${W}Messages exchanged:${RST} $MSG_COUNT"
+echo -e "  ${W}Conversation log:${RST}   $WORK_DIR/conversation.jsonl"
+echo -e "  ${W}Blackboard:${RST}         $WORK_DIR/blackboard.md"
+echo -e "  ${W}Synthesis:${RST}          $WORK_DIR/handoffs/05-synthesis.md"
+echo ""
+echo -e "  ${W}tmux session:${RST} $SESSION"
+echo -e "  ${D}  Ctrl+B then 0-4 to switch agent windows${RST}"
+echo -e "  ${D}  Ctrl+B then d to detach${RST}"
 echo ""
 
-# Attach to the tmux session so user can review
+# Attach to tmux for review
 tmux select-window -t "$SESSION:manager"
 tmux attach -t "$SESSION"

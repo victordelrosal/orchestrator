@@ -31,6 +31,14 @@ Every deliverable must include:
 - When multiple valid approaches exist, present 2-3 options with tradeoffs and recommend one.
 - Stay in scope. Don't redesign what already works.
 
+## Team Collaboration
+
+In Team mode, you communicate with other agents via shared files:
+- Read `.octopus/conversation.jsonl` for messages from other agents
+- Post design decisions as you make them (not just at the end)
+- Answer questions from the Maker and Marketer between major steps
+- The Maker and Marketer are waiting for your spec; post key decisions early
+
 ## Escalation Triggers
 
 Stop and report to the Manager when:

@@ -847,9 +847,10 @@
 
     <div class="qs-box">
       <div class="qs-tabs">
-        <button class="qs-tab active" onclick="showTab('install')"><span class="qs-badge">NEW</span>Install</button>
+        <button class="qs-tab active" onclick="showTab('install')">Install</button>
         <button class="qs-tab" onclick="showTab('claude')">Claude Code</button>
         <button class="qs-tab" onclick="showTab('any')">Any LLM Tool</button>
+        <button class="qs-tab" onclick="showTab('team')"><span class="qs-badge">NEW</span>Team Mode</button>
         <button class="qs-tab" onclick="showTab('ai')">Let AI Do It</button>
       </div>
 
@@ -897,6 +898,21 @@
           <button class="qs-copy" onclick="copyCmd(this)">copy</button>
         </div>
         <p class="qs-note">One file. No dependencies. Add it to whatever tool you use.</p>
+      </div>
+
+      <div class="qs-panel" id="tab-team">
+        <div class="qs-comment"># 5 agents in 5 terminals. Concurrent. Conversational. Requires tmux.</div>
+        <div class="qs-cmd">
+          <span class="qs-prompt">$</span>
+          <span class="qs-code">cd octopus/octopus-team && bash install-team.sh && source ~/.zshrc</span>
+          <button class="qs-copy" onclick="copyCmd(this)">copy</button>
+        </div>
+        <div class="qs-cmd">
+          <span class="qs-prompt">$</span>
+          <span class="qs-code">octopus-team build a SaaS landing page for freelancer proposals</span>
+          <button class="qs-copy" onclick="copyCmd(this)">copy</button>
+        </div>
+        <p class="qs-note">All 5 agents spawn concurrently in separate tmux windows. They converse via a shared <code>conversation.jsonl</code> while working. Live conversation feed in your terminal. <a href="https://github.com/victordelrosal/octopus/tree/main/octopus-team">View Team Mode docs</a>.</p>
       </div>
 
       <div class="qs-panel" id="tab-ai">
@@ -1110,6 +1126,13 @@ M ──┼── B ──┼── M
     </div>
 
     <div class="changelog-list">
+      <div class="changelog-entry">
+        <div class="changelog-date">2026-03-04</div>
+        <div class="changelog-version">v1.2.0</div>
+        <div class="changelog-body">
+          <strong>Team Mode v2: Collaborative agents.</strong> Complete rewrite of <code>orchestrate.sh</code>. All 5 agents now spawn concurrently (not sequentially) and converse via shared <code>conversation.jsonl</code> and <code>blackboard.md</code>. Agents with dependencies poll for prerequisites while reading early findings from upstream agents. Purple Manager monitors the conversation in real-time, resolves questions, and synthesizes. Live conversation feed in the launch terminal. New filesystem structure: <code>.octopus/board/</code>, <code>.octopus/prompts/</code>, <code>.octopus/launch/</code>.
+        </div>
+      </div>
       <div class="changelog-entry">
         <div class="changelog-date">2026-03-04</div>
         <div class="changelog-version">v1.1.0</div>
